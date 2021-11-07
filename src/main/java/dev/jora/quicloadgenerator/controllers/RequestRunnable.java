@@ -1,6 +1,6 @@
 package dev.jora.quicloadgenerator.controllers;
 
-import net.luminis.http3.Http3Client;
+import net.luminis.http3.Http3ClientBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,8 +14,12 @@ import java.util.concurrent.Executors;
 public class RequestRunnable implements Runnable {
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
-    public RequestRunnable() {
+    private final URI serverUri;
+    private boolean disableCertificateVerification;
 
+    public RequestRunnable(URI serverUri, boolean disableCertificateVerification) {
+        this.serverUri = serverUri;
+        this.disableCertificateVerification = disableCertificateVerification;
     }
 
     @Override
@@ -27,15 +31,17 @@ public class RequestRunnable implements Runnable {
         }
     }
 
-    public void runQuicRequest()  throws IOException, InterruptedException{
-        URI serverUrl = URI.create("https://127.0.0.1:6121/");
+    public HttpResponse<String> runQuicRequest() throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(serverUrl)
-                .header("User-Agent", "Flupke http3 library")
+                .uri(this.serverUri)
                 .timeout(Duration.ofSeconds(10))
                 .build();
 
-        HttpClient client = Http3Client.newHttpClient();
+        Http3ClientBuilder builder = new Http3ClientBuilder();
+        if (this.disableCertificateVerification) {
+            builder.disableCertificateCheck();
+        }
+        HttpClient client = builder.build();
         long start = System.currentTimeMillis();
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
         long end = System.currentTimeMillis();
@@ -44,5 +50,6 @@ public class RequestRunnable implements Runnable {
         long downloadSpeed = httpResponse.body().length() / (end - start);
         System.out.println("-   HTTP body (" + httpResponse.body().length() + " bytes, " + downloadSpeed + " B/s):");
         System.out.println(httpResponse.body());
+        return httpResponse;
     }
 }

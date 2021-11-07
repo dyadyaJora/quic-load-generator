@@ -1,0 +1,3 @@
+[submodule "flupke"]
+	path = flupke
+	url = https://bitbucket.org/pjtr/flupke.git

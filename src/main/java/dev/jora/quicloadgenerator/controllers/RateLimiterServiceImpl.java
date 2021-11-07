@@ -34,6 +34,7 @@ public class RateLimiterServiceImpl implements RateLimiterService {
     }
 
 
+    // @TODO: Or would Supplier<Runnable> be better?
     @Override
     public void runByCount(Runnable runnable, int count) throws InterruptedException {
         for (int i = 0; i < count; i++) {

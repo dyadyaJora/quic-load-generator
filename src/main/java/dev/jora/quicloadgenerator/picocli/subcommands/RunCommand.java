@@ -5,6 +5,8 @@ import dev.jora.quicloadgenerator.controllers.RateLimiterServiceImpl;
 import dev.jora.quicloadgenerator.controllers.RequestRunnable;
 import picocli.CommandLine.*;
 
+import java.net.URI;
+
 @Command(name = "run", description = "Start execution process")
 public class RunCommand implements Runnable {
     @Option(names = { "--rps", "-r" }, required = true, description = "requests per second", paramLabel = "RATE")
@@ -15,6 +17,12 @@ public class RunCommand implements Runnable {
 
     @Option(names = {"-c", "--count"}, description = "Total requests count in experiment", paramLabel = "REQUESTS_COUNT")
     Integer requestsCount;
+
+    @Option(names = {"-k", "--insecure"}, description = "Disable certificate verification")
+    boolean disableCertificateVerification;
+
+    @Parameters
+    URI serverUri;
 
     @Override
     public void run() {
@@ -29,7 +37,7 @@ public class RunCommand implements Runnable {
         }
 
         try {
-            service.runByCount(new RequestRunnable(), 1);
+            service.runByCount(new RequestRunnable(serverUri, disableCertificateVerification), 1);
             System.out.println("Started successfully!");
         } catch (Exception err) {
             System.out.println("Error");
