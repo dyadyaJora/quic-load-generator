@@ -36,8 +36,13 @@ public class RunCommand implements Runnable {
             return;
         }
 
+        Runnable runnable = new RequestRunnable(serverUri, disableCertificateVerification);
         try {
-            service.runByCount(new RequestRunnable(serverUri, disableCertificateVerification), 1);
+            if (seconds == null) {
+                service.runByCount(runnable, requestsCount);
+            } else {
+                service.runBySeconds(runnable, seconds);
+            }
             System.out.println("Started successfully!");
         } catch (Exception err) {
             System.out.println("Error");
