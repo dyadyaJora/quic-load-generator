@@ -1,7 +1,11 @@
 package dev.jora.quicloadgenerator.controllers;
 
-public interface RateLimiterService {
-    void runByCount(Runnable runnable, int count) throws InterruptedException;
+import dev.jora.quicloadgenerator.models.CommonResponse;
 
-    void runBySeconds(Runnable runnable, int seconds) throws InterruptedException;
+import java.util.concurrent.Callable;
+
+public interface RateLimiterService {
+    void runByCount(Callable<CommonResponse> callable, int count) throws InterruptedException;
+
+    void runBySeconds(Callable<CommonResponse> callable, int seconds) throws InterruptedException;
 }
