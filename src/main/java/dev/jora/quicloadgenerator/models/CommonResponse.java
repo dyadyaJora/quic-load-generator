@@ -11,6 +11,8 @@ import java.time.Instant;
 public class CommonResponse {
     private String errorMessage;
     private long durationMs;
+    private long bodySize;
+    private long speed;
     private Instant startTime;
     private Instant endTime;
     HttpResponse<?> response;

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 
 public abstract class BaseProtocolWrapper implements Callable<CommonResponse> {
@@ -32,16 +33,22 @@ public abstract class BaseProtocolWrapper implements Callable<CommonResponse> {
         HttpRequest request = this.scenario.nextRequest().getHttpRequest();
         HttpClient client = this.buildHttpClient();
 
-        long start = System.currentTimeMillis();
+        Instant startTime = Instant.now();
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-        long end = System.currentTimeMillis();
+        Instant endTime = Instant.now();
+        long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
         System.out.println("Got HTTP response " + httpResponse);
         System.out.println("-   HTTP headers: " + httpResponse.headers());
-        long downloadSpeed = httpResponse.body().length() / (end - start);
+        long downloadSpeed = httpResponse.body().length() / duration;
         System.out.println("-   HTTP body (" + httpResponse.body().length() + " bytes, " + downloadSpeed + " B/s):");
         System.out.println(httpResponse.body());
 
         return CommonResponse.builder()
+                .startTime(startTime)
+                .endTime(endTime)
+                .durationMs(duration)
+                .bodySize(httpResponse.body().length())
+                .speed(downloadSpeed)
                 .response(httpResponse)
                 .build();
     }
