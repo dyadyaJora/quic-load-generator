@@ -1,19 +1,19 @@
 package dev.jora.quicloadgenerator.scenarios.protocol;
 
 import dev.jora.quicloadgenerator.models.CommonResponse;
-import dev.jora.quicloadgenerator.models.ScenarioOptions;
-import dev.jora.quicloadgenerator.scenarios.IScenario;
+import dev.jora.quicloadgenerator.scenarios.generator.BaseScenario;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.Callable;
 
-public abstract class BaseProtocolWrapper implements IScenario {
-    protected ScenarioOptions options;
+public abstract class BaseProtocolWrapper implements Callable<CommonResponse> {
+    protected final BaseScenario scenario;
 
-    public BaseProtocolWrapper(ScenarioOptions options) {
-        this.options = options;
+    public BaseProtocolWrapper(BaseScenario scenario) {
+        this.scenario = scenario;
     }
 
     protected abstract HttpClient buildHttpClient();
@@ -29,7 +29,7 @@ public abstract class BaseProtocolWrapper implements IScenario {
     }
 
     public CommonResponse runRequest() throws IOException, InterruptedException {
-        HttpRequest request = this.nextRequest().getHttpRequest();
+        HttpRequest request = this.scenario.nextRequest().getHttpRequest();
         HttpClient client = this.buildHttpClient();
 
         long start = System.currentTimeMillis();

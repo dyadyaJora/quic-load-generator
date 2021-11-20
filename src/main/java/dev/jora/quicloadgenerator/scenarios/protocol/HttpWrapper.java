@@ -1,12 +1,12 @@
 package dev.jora.quicloadgenerator.scenarios.protocol;
 
-import dev.jora.quicloadgenerator.models.ScenarioOptions;
+import dev.jora.quicloadgenerator.scenarios.generator.BaseScenario;
 
 import java.net.http.HttpClient;
 
-public abstract class HttpWrapper extends BaseProtocolWrapper {
-    public HttpWrapper(ScenarioOptions options) {
-        super(options);
+public class HttpWrapper extends BaseProtocolWrapper {
+    public HttpWrapper(BaseScenario scenario) {
+        super(scenario);
     }
 
     @Override

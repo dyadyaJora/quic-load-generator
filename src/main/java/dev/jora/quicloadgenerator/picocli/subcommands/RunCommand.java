@@ -4,8 +4,7 @@ import dev.jora.quicloadgenerator.controllers.RateLimiterService;
 import dev.jora.quicloadgenerator.controllers.RateLimiterServiceImpl;
 import dev.jora.quicloadgenerator.models.CommonResponse;
 import dev.jora.quicloadgenerator.models.ScenarioOptions;
-import dev.jora.quicloadgenerator.scenarios.IScenario;
-import dev.jora.quicloadgenerator.scenarios.QuicGetScenario;
+import dev.jora.quicloadgenerator.scenarios.*;
 import picocli.CommandLine.*;
 
 import java.net.URI;
@@ -25,8 +24,11 @@ public class RunCommand implements Runnable {
     @Option(names = {"-k", "--insecure"}, description = "Disable certificate verification")
     boolean disableCertificateVerification;
 
-    @Option(names = {"-t", "--scenario-type"}, required = false, defaultValue = "quic-get", description = "Scenario type")
-    String scenarioType;
+    @Option(names = {"-st", "--scenario-type"}, required = false, defaultValue = "GET", description = "Scenario type")
+    ScenarioType scenarioType;
+
+    @Option(names = {"-pt", "--protocol-type"}, required = false, defaultValue = "QUIC", description = "Protocol type")
+    ProtocolType protocolType;
 
     @Parameters
     URI serverUri;
@@ -47,9 +49,9 @@ public class RunCommand implements Runnable {
         options.setServerUri(serverUri);
         options.setDisableCertificateVerification(disableCertificateVerification);
 
-        Callable<CommonResponse> callable = getScenarioByType(scenarioType, options);
+        Callable<CommonResponse> callable = ScenarioFactory.build(protocolType, scenarioType, options);
         if (callable == null) {
-            System.out.println("Error! Unknown scenario type: " + scenarioType);
+            System.out.println("Error! Unknown scenario/protocol combination: " + scenarioType + " / " + protocolType);
             return;
         }
 
@@ -63,14 +65,6 @@ public class RunCommand implements Runnable {
         } catch (Exception err) {
             System.out.println("Error");
             err.printStackTrace();
-        }
-    }
-
-    private static IScenario getScenarioByType(String type, ScenarioOptions options) {
-        System.out.println("Scenario selection for type " + type);
-        switch (type) {
-            case "quic-get": return QuicGetScenario.instance(options);
-            default: return null;
         }
     }
 }
