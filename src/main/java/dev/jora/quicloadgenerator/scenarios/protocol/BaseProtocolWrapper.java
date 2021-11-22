@@ -19,6 +19,12 @@ public abstract class BaseProtocolWrapper implements Callable<CommonResponse> {
 
     protected abstract HttpClient buildHttpClient();
 
+    protected HttpResponse<String> makeRequest(HttpClient client, HttpRequest request) throws IOException, InterruptedException {
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    protected void onAfterRequest(HttpClient httpClient) { }
+
     @Override
     public CommonResponse call() {
         try {
@@ -34,8 +40,9 @@ public abstract class BaseProtocolWrapper implements Callable<CommonResponse> {
         HttpClient client = this.buildHttpClient();
 
         Instant startTime = Instant.now();
-        HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> httpResponse = makeRequest(client, request);
         Instant endTime = Instant.now();
+        this.onAfterRequest(client);
         long duration = endTime.toEpochMilli() - startTime.toEpochMilli();
         System.out.println("Got HTTP response " + httpResponse);
         System.out.println("-   HTTP headers: " + httpResponse.headers());
