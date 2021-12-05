@@ -16,4 +16,17 @@ public class CommonResponse {
     private Instant startTime;
     private Instant endTime;
     HttpResponse<?> response;
+
+    public String[] toCsvLine() {
+        return new String[]{
+                this.errorMessage,
+                String.valueOf(this.durationMs),
+                String.valueOf(this.bodySize),
+                String.valueOf(this.speed),
+                startTime.toString(),
+                endTime.toString(),
+                String.valueOf(response.statusCode()),
+                response.request().method()
+        };
+    }
 }

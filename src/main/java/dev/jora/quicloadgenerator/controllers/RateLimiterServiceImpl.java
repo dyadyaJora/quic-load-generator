@@ -1,15 +1,15 @@
 package dev.jora.quicloadgenerator.controllers;
 
+import com.opencsv.CSVWriter;
 import dev.jora.quicloadgenerator.models.CommonResponse;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Bucket4j;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 public class RateLimiterServiceImpl implements RateLimiterService {
@@ -17,7 +17,7 @@ public class RateLimiterServiceImpl implements RateLimiterService {
     private final ExecutorService executor;
     private final CompletionService<CommonResponse> service;
     private final ExecutorService ioExecutor;
-    private final CompletionService<String> ioService;
+    private final CompletionService<String[]> ioService;
     private final int rps;
 
     private RateLimiterServiceImpl(int rps) {
@@ -46,35 +46,36 @@ public class RateLimiterServiceImpl implements RateLimiterService {
 
     // @TODO: Or would Supplier<Callable> be better?
     @Override
-    public void runByCount(Callable<CommonResponse> callable, int count) throws InterruptedException {
+    public void runByCount(Callable<CommonResponse> callable, int count, File outFile) throws InterruptedException {
         Thread waiter = new Thread(() -> {
             System.out.println("waiter started! " + Instant.now().toString());
             try {
-                while (!executor.isTerminated()) {
+                int counter = 0;
+                while (!executor.isTerminated() && counter++ < count) {
                     System.out.println("here" + Instant.now().toString());
+
                     final Future<CommonResponse> future = service.take();
-                    String resultString = " RESULT === " + future.get().toString();
-                    System.out.println(resultString);
-                    ioService.submit(() -> resultString);
+                    String[] resultStrings = future.get().toCsvLine();
+                    System.out.println(Arrays.toString(resultStrings));
+                    ioService.submit(() -> resultStrings);
                 }
             } catch (InterruptedException | ExecutionException err) {
                 err.printStackTrace();
             }
         });
+
         Thread ioWaiter = new Thread(() -> {
-
-            File file = new File("./tmp.txt");
             try {
-
-                try (FileOutputStream fos = new FileOutputStream(file)) {
+                try (FileOutputStream fos = new FileOutputStream(outFile)) {
                     fos.write("".getBytes());
                 }
-//            try(BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("tmp.txt", true))) {
-                while (!ioExecutor.isTerminated()) {
-                    final Future<String> future = ioService.take();
-                    String resultString = future.get() + "\n";
-//                    bufferedWriter.write(resultString + "\n");
-                    Files.write(file.toPath(), resultString.getBytes(), StandardOpenOption.APPEND);
+                try (CSVWriter csvWriter = new CSVWriter(new FileWriter(outFile, true))) {
+                    int counter = 0;
+                    while (!ioExecutor.isTerminated() && counter++ < count) {
+                        final Future<String[]> future = ioService.take();
+                        csvWriter.writeNext(future.get());
+                        csvWriter.flush();
+                    }
                 }
             } catch (InterruptedException | ExecutionException | IOException err) {
                 err.printStackTrace();
@@ -96,8 +97,8 @@ public class RateLimiterServiceImpl implements RateLimiterService {
     }
 
     @Override
-    public void runBySeconds(Callable<CommonResponse> callable, int seconds) throws InterruptedException {
+    public void runBySeconds(Callable<CommonResponse> callable, int seconds, File outFile) throws InterruptedException {
         int count = seconds * this.rps;
-        this.runByCount(callable, count);
+        this.runByCount(callable, count, outFile);
     }
 }

@@ -7,6 +7,7 @@ import dev.jora.quicloadgenerator.models.ScenarioOptions;
 import dev.jora.quicloadgenerator.scenarios.*;
 import picocli.CommandLine.*;
 
+import java.io.File;
 import java.net.URI;
 import java.util.concurrent.Callable;
 
@@ -24,11 +25,14 @@ public class RunCommand implements Runnable {
     @Option(names = {"-k", "--insecure"}, description = "Disable certificate verification")
     boolean disableCertificateVerification;
 
-    @Option(names = {"-st", "--scenario-type"}, required = false, defaultValue = "GET", description = "Scenario type")
+    @Option(names = {"-st", "--scenario-type"}, defaultValue = "GET", description = "Scenario type")
     ScenarioType scenarioType;
 
-    @Option(names = {"-pt", "--protocol-type"}, required = false, defaultValue = "QUIC", description = "Protocol type")
+    @Option(names = {"-pt", "--protocol-type"}, defaultValue = "QUIC", description = "Protocol type")
     ProtocolType protocolType;
+
+    @Option(names = {"-o", "--out"}, defaultValue = "./tmp.csv", description = "output for CSV results")
+    File outFile;
 
     @Parameters
     URI serverUri;
@@ -57,9 +61,9 @@ public class RunCommand implements Runnable {
 
         try {
             if (seconds == null) {
-                service.runByCount(callable, requestsCount);
+                service.runByCount(callable, requestsCount, outFile);
             } else {
-                service.runBySeconds(callable, seconds);
+                service.runBySeconds(callable, seconds, outFile);
             }
             System.out.println("Started successfully!");
         } catch (Exception err) {
