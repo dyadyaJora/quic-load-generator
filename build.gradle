@@ -21,6 +21,10 @@ dependencies {
 
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // Use rest assured
+    testImplementation 'io.rest-assured:rest-assured:4.3.3'
+    testImplementation 'io.rest-assured:json-schema-validator:4.3.3'
 }
 
 jar {
@@ -34,4 +38,8 @@ jar {
                 'Main-Class': 'dev.jora.quicloadgenerator.Main'
         )
     }
+}
+
+wrapper {
+    gradleVersion = "6.3"
 }
