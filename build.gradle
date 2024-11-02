@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group 'dev.jora'
@@ -20,7 +22,7 @@ dependencies {
     implementation group: 'com.opencsv', name: 'opencsv', version: '5.4'
 
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 
     // Use rest assured
     testImplementation 'io.rest-assured:rest-assured:4.3.3'
@@ -28,9 +30,10 @@ dependencies {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.testCompile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.testCompileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
@@ -40,6 +43,72 @@ jar {
     }
 }
 
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    archiveClassifier.set('sources')
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier.set('javadoc')
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                name = 'QUIC Load Generator'
+                description = 'CLI tool to generate load profile of QUIC requests'
+                url = 'https://github.com/dyadyaJora/quic-load-generator'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'dyadyaJora'
+                        name = 'George K'
+                        email = 'idyadyajora@yandex.ru'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/dyadyaJora/quic-load-generator.git'
+                    developerConnection = 'scm:git:ssh://github.com:dyadyaJora/quic-load-generator.git'
+                    url = 'https://github.com/dyadyaJora/quic-load-generator'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "LocalMavenWithChecksums"
+            url = mavenLocal().url
+        }
+    }
+}
+
+//tasks.withType(Jar) { task ->
+//    task.doLast {
+//        ant.checksum algorithm: 'md5', file: it.archivePath
+//        ant.checksum algorithm: 'sha1', file: it.archivePath
+//    }
+//}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
 wrapper {
-    gradleVersion = "6.3"
+    gradleVersion = "8.10.2"
 }
