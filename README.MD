@@ -36,4 +36,13 @@ To run with limited request counts(30 requests with 10 RPS in 3 seconds):
 To run with limited execution time(30 total requests in 30 seconds with 1 RPS):
 
     java -jar quic-load-generator.jar run -r=1 -s=30 https://localhost:6121
-    
+
+## Installation
+
+### Install as gradle project
+
+    implementation group: 'dev.jora', name: 'quic-load-generator', version: '1.0.1'
+
+### Easy install with npm over jdeploy
+
+    npm install -g quic-load-generator
