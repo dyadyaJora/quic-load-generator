@@ -2,3 +2,7 @@
 .idea
 build/
 out/
+gradle.properties
+*.gpg
+jdeploy-bundle/
+node_modules/

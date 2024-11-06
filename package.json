@@ -1,0 +1,46 @@
+{
+  "bin": {
+    "quic-load-generator": "jdeploy-bundle/jdeploy.js"
+  },
+  "name": "quic-load-generator",
+  "description": "Quic Load Generator CLI",
+  "main": "index.js",
+  "preferGlobal": "true",
+  "version": "1.0.1",
+  "jdeploy": {
+    "jdk": "false",
+    "javaVersion": "11",
+    "jar": "build/libs/quic-load-generator-1.0.1.jar",
+    "javafx": "false",
+    "title": "Quic Load Generator 1.0.1",
+    "tryJavaHomeFirst": "true"
+  },
+  "dependencies": {
+    "command-exists-promise": "^2.0.2",
+    "node-fetch": "2.6.7",
+    "tar": "^4.4.8",
+    "yauzl": "^2.10.0",
+    "shelljs": "^0.8.4"
+  },
+  "files": [
+    "jdeploy-bundle"
+  ],
+  "keywords": [
+    "quic",
+    "load-generator",
+    "jdeploy"
+  ],
+  "author": "George Kindra (https://github.com/dyadyaJora)",
+  "license": "ISC",
+  "homepage": "https://github.com/dyadyaJora/quic-load-generator",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dyadyaJora/quic-load-generator.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
